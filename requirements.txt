@@ -1,0 +1,4 @@
+openai-agents>=0.19
+fastapi
+uvicorn[standard]
+python-dotenv

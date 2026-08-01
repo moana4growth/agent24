@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>MoodBreak — RAW API STREAM</title>
+<style>
+  body { background:#000; color:#9fef9f; font:12px/1.5 "SF Mono",Menlo,Consolas,monospace; margin:0; }
+  header { position:sticky; top:0; background:#000; border-bottom:1px solid #1f3f1f;
+           padding:8px 14px; display:flex; gap:16px; align-items:center; }
+  h1 { font-size:13px; color:#d2ffd2; margin:0; }
+  #stats { color:#5a9f5a; }
+  label { color:#5a9f5a; margin-left:auto; user-select:none; cursor:pointer; }
+  #feed { padding:10px 14px; }
+  .ev { border-bottom:1px dashed #143014; padding:6px 0; white-space:pre-wrap; word-break:break-all; }
+  .ev .hd { color:#ffd24f; }
+  .ev.tool_call_item .hd { color:#4fd2ff; }
+  .ev.tool_call_output_item .hd { color:#ff9f4f; }
+  .ev.error .hd { color:#ff5f5f; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RAW tool_call / tool_result STREAM</h1>
+  <span id="stats">0 events</span>
+  <label><input type="checkbox" id="autoscroll" checked> autoscroll</label>
+</header>
+<div id="feed"></div>
+<script>
+let n = 0;
+const feed = document.getElementById('feed');
+function connect(){
+  const ws = new WebSocket(`ws://${location.host}/ws/viewer`);
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    const d = document.createElement('div');
+    d.className = 'ev ' + (m.item_type || m.stream || '');
+    const ts = new Date(m.t).toLocaleTimeString('ko-KR', {hour12:false}) ;
+    d.innerHTML = `<span class="hd">[${ts}] ${m.stream}${m.item_type? ' / '+m.item_type:''}${m.agent? ' @'+m.agent:''}</span>\n`;
+    d.append(JSON.stringify(m.raw_item ?? m, null, 1));
+    feed.append(d);
+    document.getElementById('stats').textContent = `${++n} events`;
+    if (document.getElementById('autoscroll').checked) d.scrollIntoView();
+    if (feed.children.length > 800) feed.removeChild(feed.firstChild);
+  };
+  ws.onclose = () => setTimeout(connect, 1500);
+  setInterval(()=>{ try{ ws.send('ping'); }catch(e){} }, 20000);
+}
+connect();
+</script>
+</body>
+</html>
