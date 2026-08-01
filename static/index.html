@@ -147,7 +147,8 @@ ws.onmessage = e => {
   else if (m.type==='mood_cards'){ renderMoods(m); }
   else if (m.type==='ask'){ renderAsk(m); }
   else if (m.type==='artifact'){ addArtifact(m); }
-  else if (m.type==='done'){ running=false; $('start').disabled=false; log('orchestrator ✓', m.final||'완료'); }
+  else if (m.type==='done'){ running=false; $('start').disabled=false; log('orchestrator ✓', m.final||'완료');
+    $('results').classList.remove('hidden'); /* always allow follow-up input */ }
   else if (m.type==='error'){ running=false; $('start').disabled=false; log('⚠ error', m.message); }
 };
 
