@@ -255,7 +255,22 @@ Call save_artifact ONCE PER FILE, in this order:
    [관찰: <which reference image/what was seen>] for rules derived from
    references the team actually saw, [관습: <domain>] for domain conventions,
    [판단: <one-line reasoning>] for judgment calls. A rule you cannot source
-   honestly gets [판단] with real reasoning — never fabricate observations. Include: mood essence, tokens table, layout rules
+   honestly gets [판단] with real reasoning — never fabricate observations.
+
+   EXACTNESS RULE: no adjectives where a number can go. Every value is exact —
+   hex codes, font family + weight + size in px, line-height, letter-spacing,
+   spacing in px, radius per component, border widths. Vague rules ("넉넉한
+   여백") are forbidden; write "섹션 간 96px, 카드 내부 20px" instead.
+
+   COMPONENT SPEC SHEETS: include a spec block for each core component
+   (header, footer/nav, primary+secondary button with states, card, input,
+   badge) — exact measurements, so a coding agent can build ONE component
+   without seeing anything else.
+
+   FINAL SECTION — "AI에게 시키는 법": ready-to-paste prompt templates for
+   future use, e.g. "아래 사양만으로 헤더를 만들어줘. 다른 요소는 건드리지
+   마: <header spec>". State the principle: 범위를 컴포넌트 단위로 좁힐수록
+   AI의 창의적 이탈이 줄어든다 — 전체 재생성 요청 금지, 항상 부분 단위로. Include: mood essence, tokens table, layout rules
    (incl. the intentional grid violation), component rules, microcopy rules,
    and a FORBIDDEN section (the cliches this brand never does). This file must
    be self-sufficient: pasted into Claude Code/Cursor, it should reproduce the style.

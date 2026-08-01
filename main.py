@@ -167,8 +167,23 @@ async def ws_app(ws: WebSocket) -> None:
         sessions.pop(sid, None)
 
 
+_LINEAGE_POOL = [
+    "editorial print", "brutalist web", "retro OS/terminal", "Japanese minimal",
+    "Swiss grid", "analog zine", "art deco signage", "1970s technical manual",
+    "risograph poster", "luxury lookbook", "newspaper broadsheet", "cassette-era packaging",
+]
+
+
 def _brief_text(msg: dict) -> str:
+    import random
+
+    seeds = random.sample(_LINEAGE_POOL, 2)
     parts = [f"[PRODUCT BRIEF] {msg.get('brief', '')}"]
+    parts.append(
+        f"[VARIATION SEED] weak starting-point hints for this run only: {seeds[0]}, {seeds[1]}. "
+        "User signals and product fit ALWAYS override these; use them only to avoid "
+        "defaulting to the same lineages every run."
+    )
     if msg.get("reference"):
         parts.append(f"[USER MOOD/REFERENCE SIGNALS] {msg['reference']}")
     if msg.get("image_b64"):
