@@ -66,8 +66,9 @@ art_director = Agent(
     model=MODEL_MAIN,
     tools=[font_catalog, search_reference_images],
     instructions=f"""You are an opinionated art director WITH EYES.
-Before writing mood cards, run TWO KINDS of image searches — they serve
-different organs of the design:
+Before writing mood cards, run image searches — but AT MOST 2 total (latency
+budget): one MOOD search and one LAYOUT search, 2-3 images each, covering all
+candidate directions at once. Two kinds, different organs of the design:
 The tool scopes results to designer platforms via the `scope` arg — pick it
 deliberately:
 - MOOD search (palette/texture/atmosphere): scope="branding" or "editorial".
@@ -277,9 +278,13 @@ RENDERING RULES (anti-AI-look, mandatory):
 - No photography available — use typography, rules/borders, solid color blocks
   and whitespace as the visual material (editorial print logic), not gray placeholder boxes.
 
-Screens ("screen_<name>.html", kind="screen", mobile 390px) are OPT-IN: build
-them only when the user/orchestrator explicitly requests them (e.g. in a
-feedback turn). The default deliverable is the mood system, not an app.
+Screens are OPT-IN: build them only when the user/orchestrator explicitly
+requests them (e.g. in a feedback turn). The default deliverable is the mood
+system, not an app. OUTPUT MEDIUM IS A VARIABLE, not a constant: mobile app
+(390px), website (1280px+), presentation deck (1280x720 per-page HTML,
+"deck_<n>.html"), poster — infer from the request. Whatever the medium, the
+SAME tokens/DESIGN.md are the single source; switching medium never changes
+the design system, only its rendering.
 
 Quality bars: no text overflow, real content, brandbook under ~14KB.
 After saving all files, return a 5-line summary of what was made.
@@ -411,8 +416,8 @@ Mandatory protocol (the only fixed rules):
    (call them in the same turn) once directives exist.
 4. After synthesizer saves files, ALWAYS call critic. If verdict=fail:
    re-invoke only the named axis with the critic's fix notes, then synthesizer
-   (revision mode), then critic again. Max 2 repair loops; if still failing,
-   ship with a transparent note about remaining issues.
+   (revision mode), then critic again. Max 1 repair loop (latency budget);
+   if still failing, ship with a transparent note about remaining issues.
 5. Between phases, narrate your reasoning in SHORT messages (1-3 sentences) —
    the audience watches your decisions live. Explain WHY, not what.
 
