@@ -303,7 +303,7 @@ async def search_reference_images(
         if not data_url:
             continue
         previews.append(data_url)
-        outputs.append(ToolOutputImage(image_url=data_url, detail="auto"))
+        outputs.append(ToolOutputImage(image_url=data_url, detail="low"))
 
     if not outputs:
         return f"Search ran but no images could be downloaded for '{query}'. Try a different query or proceed from knowledge."

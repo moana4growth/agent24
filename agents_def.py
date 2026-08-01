@@ -8,6 +8,9 @@ from __future__ import annotations
 import os
 
 from agents import Agent, ModelSettings, WebSearchTool
+from openai.types.shared import Reasoning
+
+FAST_THINK = ModelSettings(reasoning=Reasoning(effort="low"))
 
 from tools import (
     ask_user,
@@ -63,11 +66,22 @@ art_director = Agent(
     model=MODEL_MAIN,
     tools=[font_catalog, search_reference_images],
     instructions=f"""You are an opinionated art director WITH EYES.
-Before writing mood cards: (1) call search_reference_images once per candidate
-direction (specific visual queries) and STUDY what comes back — grid, palette,
-type, texture. Your mood cards must be autopsies of designs you actually SAW,
-citing what you took from the references ("두 번째 이미지의 여백 리듬").
-If search fails, say so and proceed from knowledge.
+Before writing mood cards, run TWO KINDS of image searches — they serve
+different organs of the design:
+Restrict both to PROFESSIONAL DESIGN PORTFOLIO work — not random photos:
+- MOOD search (palette/texture/atmosphere): branding/identity portfolio pieces —
+  append terms like "branding identity behance", "brand guidelines presentation",
+  "editorial design portfolio". e.g. "salon branding identity behance muted".
+- LAYOUT search (structure donor): must return FINISHED SCREEN DESIGNS —
+  append terms like "app UI screens dribbble", "mobile app design behance",
+  "web design awwwards", "UI kit screens". You cannot transplant an app's
+  grid from a photo of a salon interior; only from actual UI.
+RELEVANCE GATE: search results are noisy (you may literally get buses).
+Look at each image and explicitly discard irrelevant ones; if most results
+miss, re-search ONCE with a sharper query before falling back to knowledge.
+Your mood cards must be autopsies of images you actually SAW and judged
+relevant, citing what you took ("레이아웃 레퍼런스 2번의 좌측 고정 내비").
+If search fails entirely, say so and proceed from knowledge.
 (2) ALWAYS call font_catalog with your mood keywords —
 each card's typography must name real fonts from the catalog (display + body pairing). Input: product brief + research (KEEP/BREAK lists) + optional user reference/mood signals.
 
@@ -158,7 +172,9 @@ itself, flag the conflict explicitly instead of averaging it away.
 layout_architect = Agent(
     name="LayoutArchitect",
     model=MODEL_MAIN,
+    model_settings=FAST_THINK,
     instructions=f"""You design LAYOUT SYSTEMS — the axis AI tools are weakest at.
+BE TELEGRAPHIC: the whole spec under ~350 words, dense bullets, no prose padding.
 Input: art-director directive + KEEP checklist for the domain.
 
 Produce a layout specification:
@@ -177,7 +193,9 @@ Output as a structured spec another agent can implement in CSS.
 color_concept = Agent(
     name="ColorConcept",
     model=MODEL_FAST,
+    model_settings=FAST_THINK,
     instructions=f"""You define COLOR & VISUAL CONCEPT from an art-director directive.
+BE TELEGRAPHIC: under ~250 words, dense bullets.
 Produce:
 - Palette: primary / surface / text / accent / semantic, as hex, with the
   reasoning anchored in the mood's design lineage (name real-world anchors:
@@ -193,7 +211,9 @@ Output hex values ready for design tokens.
 voice_tone = Agent(
     name="VoiceTone",
     model=MODEL_FAST,
+    model_settings=FAST_THINK,
     instructions=f"""You define VOICE & MICROCOPY rules from an art-director directive.
+BE TELEGRAPHIC: under ~250 words; examples 3 per area, not 5-7.
 Produce:
 - Voice definition: 3 adjectives + 3 "we never sound like" anti-adjectives.
 - Concrete microcopy for: primary CTA, empty state, error, loading, success,
@@ -311,7 +331,7 @@ def build_orchestrator() -> Agent:
     return Agent(
         name="Orchestrator",
         model=MODEL_MAIN,
-        model_settings=ModelSettings(parallel_tool_calls=True),
+        model_settings=ModelSettings(parallel_tool_calls=True, reasoning=Reasoning(effort="low")),
         tools=[
             submit_plan,
             present_mood_cards,
