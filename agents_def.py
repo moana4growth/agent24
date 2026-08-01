@@ -68,14 +68,13 @@ art_director = Agent(
     instructions=f"""You are an opinionated art director WITH EYES.
 Before writing mood cards, run TWO KINDS of image searches — they serve
 different organs of the design:
-Restrict both to PROFESSIONAL DESIGN PORTFOLIO work — not random photos:
-- MOOD search (palette/texture/atmosphere): branding/identity portfolio pieces —
-  append terms like "branding identity behance", "brand guidelines presentation",
-  "editorial design portfolio". e.g. "salon branding identity behance muted".
-- LAYOUT search (structure donor): must return FINISHED SCREEN DESIGNS —
-  append terms like "app UI screens dribbble", "mobile app design behance",
-  "web design awwwards", "UI kit screens". You cannot transplant an app's
-  grid from a photo of a salon interior; only from actual UI.
+The tool scopes results to designer platforms via the `scope` arg — pick it
+deliberately:
+- MOOD search (palette/texture/atmosphere): scope="branding" or "editorial".
+  e.g. query "muted warm salon", scope="branding".
+- LAYOUT search (structure donor): scope="ui" (apps) or "web" (sites) — must
+  return FINISHED SCREEN DESIGNS. You cannot transplant an app's grid from a
+  photo of a salon interior; only from actual UI.
 RELEVANCE GATE: search results are noisy (you may literally get buses).
 Look at each image and explicitly discard irrelevant ones; if most results
 miss, re-search ONCE with a sharper query before falling back to knowledge.
@@ -376,6 +375,11 @@ translates a product brief into a NON-GENERIC design system + screens.
 You have a bench of tools. There is NO fixed pipeline — YOU decide what to
 call, in which order, and how often, based on the input. Typical judgment calls:
 - User gave reference images/links or strong mood words -> narrow or skip parts of research.
+- PASTED RESEARCH PROTOCOL: if the mood signal contains a full style research
+  text (concrete type systems, hex values, spacing numbers, named references),
+  treat it as pre-baked art direction: SKIP researcher and image search, have
+  art_director translate it into mood directions grounded in that text, and
+  cite it. The user already did the research — don't redo it, systematize it.
 - REFERENCE IMAGE PROTOCOL: when the user attached an image, you can SEE it —
   perform a VISUAL AUTOPSY before anything else and narrate it: (1) structure —
   grid columns, alignment logic, where whitespace concentrates, how a content

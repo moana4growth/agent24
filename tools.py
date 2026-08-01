@@ -264,22 +264,34 @@ def _download_image(url: str) -> str | None:
         return None
 
 
+_SCOPE_SUFFIX = {
+    "ui": "app UI design dribbble behance screens",
+    "web": "website design awwwards land-book landing page",
+    "branding": "branding identity behance brand guidelines",
+    "editorial": "editorial design magazine layout behance",
+    "any": "design",
+}
+
+
 @function_tool
 async def search_reference_images(
-    ctx: RunContextWrapper[SessionCtx], query: str, count: int
+    ctx: RunContextWrapper[SessionCtx], query: str, count: int, scope: str
 ) -> list:
-    """Search the live web for REAL design reference images and SEE them.
+    """Search designer reference platforms for REAL design work and SEE it.
 
-    Returns actual images into your context — use your eyes: autopsy their
-    layout structure, palette, typography, texture, then translate into rules.
-    Use specific visual queries ("kinfolk magazine spread layout",
-    "swiss grid poster 1960s", "brutalist web design"), not generic ones.
+    Results are scoped to professional design portfolios (dribbble/behance/
+    awwwards etc.), like a designer browsing references. Use your eyes:
+    autopsy layout structure, palette, typography, texture → rules.
 
     Args:
-        query: image search query (English works best).
+        query: visual search query (English; style/subject words only —
+               platform names are appended automatically).
         count: how many images to return (2-4 recommended).
+        scope: "ui" (app screens) | "web" (websites) | "branding" |
+               "editorial" (print/magazine) | "any".
     """
     count = max(1, min(int(count), 4))
+    query = f"{query} {_SCOPE_SUFFIX.get(scope.lower().strip(), _SCOPE_SUFFIX['any'])}"
     try:
         from ddgs import DDGS
 
