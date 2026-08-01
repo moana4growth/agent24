@@ -153,7 +153,10 @@ body, or loud display + quiet body; never two similar faces) → apply roughly
 60/30/10 color distribution (dominant/secondary/accent) → only then write rules.
 2. Every direction must deliberately break at least 2 items from the BREAK
    list while preserving ALL KEEP items. State which.
-3. Pick YOUR recommendation and defend it in one sharp sentence tied to the
+3. Give each direction an EMOTIONAL BALANCE with percentages tied to the
+   product's stakes (e.g. 신뢰 50% · 따뜻함 35% · 편안함 15% — "내 아이를
+   맡기는 결정이니까"), and state how each emotion translates visually.
+4. Pick YOUR recommendation and defend it in one sharp sentence tied to the
    target user, not taste.
 4. After the user picks a mood, write a DIRECTIVE BRIEF for each specialist
    (layout / color / voice): concrete constraints, not vibes. Include
@@ -182,6 +185,10 @@ BE TELEGRAPHIC: the whole spec under ~350 words, dense bullets, no prose padding
 Input: art-director directive + KEEP checklist for the domain.
 
 Produce a layout specification:
+- Think in the user's psychological journey (진입→발견→평가→결정→행동) when
+  ORDERING sections — but keep it as thinking, not documentation: output at
+  most one line of journey rationale. You produce design specs, not product
+  planning docs.
 - Grid: columns, gutters, and at least one INTENTIONAL grid violation (where and why).
 - Element inventory: which components exist, which common ones you deliberately OMIT and why.
 - Hierarchy: what the eye hits 1st/2nd/3rd on each key screen.
@@ -251,6 +258,12 @@ Call save_artifact ONCE PER FILE, in this order:
 2. "DESIGN.md" (kind="designmd") — an AI-consumable design system doc: written
    as INSTRUCTIONS to a coding agent ("When building any screen for this
    product, you must...").
+   SCOPE DISCIPLINE: this is a DESIGN & CONCEPT document, not a product plan.
+   Contents are limited to: mood essence, tokens, layout grammar, component
+   specs, motion, voice rules, forbidden list, AI usage templates. NO feature
+   lists, NO user-journey documentation, NO business/strategy content, NO
+   screen-by-screen product specs. Target length: tight — every line must be
+   a design decision a coding agent can execute.
    PROVENANCE RULE: every rule must end with a source tag —
    [관찰: <which reference image/what was seen>] for rules derived from
    references the team actually saw, [관습: <domain>] for domain conventions,
@@ -266,6 +279,12 @@ Call save_artifact ONCE PER FILE, in this order:
    (header, footer/nav, primary+secondary button with states, card, input,
    badge) — exact measurements, so a coding agent can build ONE component
    without seeing anything else.
+
+   MOTION SPEC: a micro-interaction section with exact specs per interaction —
+   Trigger / Animation / Duration(ms) / Easing / Purpose (e.g. "카드 호버:
+   translateY(-4px)+shadow, 200ms, ease-out — 클릭 가능성 암시"). Defaults:
+   feedback 150-200ms ease-out, transitions 250-350ms, entrances 400-600ms
+   staggered. Motion must express the mood (a quiet brand moves slowly).
 
    FINAL SECTION — "AI에게 시키는 법": ready-to-paste prompt templates for
    future use, e.g. "아래 사양만으로 헤더를 만들어줘. 다른 요소는 건드리지
@@ -326,7 +345,14 @@ critic = Agent(
     name="Critic",
     model=MODEL_MAIN,
     tools=[read_artifact, list_artifacts, scan_cliches, check_contrast],
-    instructions=f"""You are the quality gate. Audit the saved artifacts with your tools:
+    instructions=f"""You are the quality gate. Audit the saved artifacts with your tools.
+
+SCOPED RE-AUDIT: if the input says this is a RE-AUDIT after repairs, check
+ONLY the previously failed files and axes listed — do not re-read or re-scan
+anything that already passed. First audits: prioritize brandbook.html and
+design-tokens.json; sample screens rather than exhaustively reading everything.
+
+Full audit checklist:
 
 1. read each variant/screen HTML -> run scan_cliches on the content.
 2. extract text/background pairs from design-tokens.json -> check_contrast on each.
@@ -452,8 +478,10 @@ Mandatory protocol (the only fixed rules):
    conversation; a missing brief makes them invent a different product.
 4. After synthesizer saves files, ALWAYS call critic. If verdict=fail:
    re-invoke only the named axis with the critic's fix notes, then synthesizer
-   (revision mode), then critic again. Max 1 repair loop (latency budget);
-   if still failing, ship with a transparent note about remaining issues.
+   (revision mode), then critic marked "RE-AUDIT: only check <failed files/axes>".
+   Max 1 repair loop (latency budget); if still failing, ship with a
+   transparent note about remaining issues. Minor-severity failures may ship
+   as-is with the note — repair only major severity.
 5. Between phases, narrate your reasoning in SHORT messages (1-3 sentences) —
    the audience watches your decisions live. Explain WHY, not what.
 
