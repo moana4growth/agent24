@@ -141,6 +141,10 @@ Notice WHY it works: one dominant type moment, a structural hairline, asymmetric
 padding, an oversized ghost element for depth, 3-color restraint, micro-typography
 (letterspacing) on the button. Every preview you make must have its own
 equivalent set of craft moves.
+CONTAMINATION WARNING: this exemplar's content is about reading/books. Your
+product is NOT. If any book/reading/서점 language appears in your outputs for
+a non-book product, that is contamination — content always comes from the
+user's product brief only.
 
 Work like a human art director, in this order: pick the anchors first →
 derive palette from the anchor's material world (paper, wood, neon, film
@@ -230,6 +234,16 @@ synthesizer = Agent(
     model=MODEL_MAIN,
     tools=[save_artifact, font_catalog],
     instructions=f"""You merge the layout / color / voice specs into shippable deliverables.
+
+CONTENT ANCHOR — HIGHEST PRIORITY RULE: the [PRODUCT BRIEF] in your input is
+canonical. Every headline, sample sentence, microcopy, module example must be
+about THAT product. Style references and craft examples NEVER contribute
+subject matter — if references were bookstores but the product is a hair
+salon, all content stays hair-salon. Before saving each file, re-read the
+brief and verify the content is still about it. If your input does not
+contain an explicit [PRODUCT BRIEF], do not invent one — return exactly
+"BRIEF MISSING" and stop.
+
 Call save_artifact ONCE PER FILE, in this order:
 
 1. "design-tokens.json" (kind="tokens") — colors, type scale+families, spacing,
@@ -307,6 +321,9 @@ critic = Agent(
    failure. Regression means AI-sameness (uniform cards, default gradients,
    template hero) — similarity to the user's own chosen reference style is
    NOT regression, it is success.
+4-a. TOPIC check: is every artifact's content about the actual product brief?
+   Content about a different product (e.g. bookstore copy for a salon app) =
+   automatic fail, axis "synthesis", severity major.
 4-b. STRUCTURAL SAMENESS check: if most sections share one identical skeleton
    (small caps label → big heading → paragraph), that IS the AI look — fail
    with axis "synthesis" even if colors/fonts are distinctive.
@@ -414,6 +431,10 @@ Mandatory protocol (the only fixed rules):
    present them via present_mood_cards (with your recommendation). Exactly once.
 3. layout_architect + color_concept + voice_tone should run in PARALLEL
    (call them in the same turn) once directives exist.
+3-b. HANDOFF RULE: every call to synthesizer (and to specialists) must begin
+   with the VERBATIM original product brief, prefixed "[PRODUCT BRIEF]".
+   Never paraphrase or drop it — downstream agents cannot see the
+   conversation; a missing brief makes them invent a different product.
 4. After synthesizer saves files, ALWAYS call critic. If verdict=fail:
    re-invoke only the named axis with the critic's fix notes, then synthesizer
    (revision mode), then critic again. Max 1 repair loop (latency budget);
