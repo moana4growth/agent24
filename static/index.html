@@ -36,7 +36,7 @@
   .mood .pal i { flex:1; }
   .mood h3 { font-size:14px; } .mood p { font-size:12px; color:var(--dim); }
   .mood .badge { font-size:10px; color:#111; background:var(--ac); border-radius:3px; padding:1px 5px; margin-left:6px; }
-  .mood .mprev { width:100%; height:175px; border:0; border-radius:6px; margin:8px 0; background:#fff; pointer-events:none; }
+  .mood .mprev { width:100%; height:200px; border:0; border-radius:6px; margin:8px 0; background:#fff; pointer-events:none; }
   #tabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
   #tabs button { background:var(--panel); color:var(--tx); border:1px solid var(--line); font-weight:400; font-size:12px; }
   #tabs button.on { border-color:var(--ac); color:var(--ac); }
@@ -136,6 +136,14 @@ ws.onmessage = e => {
   }
   else if (m.type==='agent_text'){ log(m.agent, m.text); }
   else if (m.type==='phase' && m.tool){ phase(`tool: ${m.tool}`); }
+  else if (m.type==='ref_images'){
+    const d=document.createElement('div'); d.className='msg';
+    d.innerHTML=`<div class="who">agent의 눈 — "${esc(m.query)}"</div>`;
+    const row=document.createElement('div'); row.style.cssText='display:flex;gap:6px;margin-top:6px;flex-wrap:wrap';
+    m.images.forEach(src=>{const im=document.createElement('img'); im.src=src;
+      im.style.cssText='height:80px;border-radius:4px;border:1px solid var(--line)'; row.append(im);});
+    d.append(row); $('log').append(d); d.scrollIntoView();
+  }
   else if (m.type==='mood_cards'){ renderMoods(m); }
   else if (m.type==='ask'){ renderAsk(m); }
   else if (m.type==='artifact'){ addArtifact(m); }

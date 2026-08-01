@@ -14,7 +14,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Optional
 
-from agents import RunContextWrapper, function_tool
+import base64
+
+from agents import RunContextWrapper, ToolOutputImage, ToolOutputText, function_tool
 
 
 # ---------------------------------------------------------------- session ctx
@@ -240,6 +242,76 @@ def domain_checklist(domain: str) -> str:
         if k in key or key in k:
             return json.dumps({"domain": k, "required": v, "note": "fuzzy match"}, ensure_ascii=False)
     return json.dumps({"domain": key, "required": [], "note": "unknown domain — derive required elements yourself from research"}, ensure_ascii=False)
+
+
+def _download_image(url: str) -> str | None:
+    """Download an image and return a data URL, or None on failure."""
+    import requests
+
+    try:
+        r = requests.get(
+            url, timeout=6, stream=True,
+            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"},
+        )
+        ctype = r.headers.get("content-type", "")
+        if r.status_code != 200 or not ctype.startswith("image/"):
+            return None
+        data = r.content
+        if len(data) > 4_000_000:
+            return None
+        return f"data:{ctype.split(';')[0]};base64,{base64.b64encode(data).decode()}"
+    except Exception:
+        return None
+
+
+@function_tool
+async def search_reference_images(
+    ctx: RunContextWrapper[SessionCtx], query: str, count: int
+) -> list:
+    """Search the live web for REAL design reference images and SEE them.
+
+    Returns actual images into your context — use your eyes: autopsy their
+    layout structure, palette, typography, texture, then translate into rules.
+    Use specific visual queries ("kinfolk magazine spread layout",
+    "swiss grid poster 1960s", "brutalist web design"), not generic ones.
+
+    Args:
+        query: image search query (English works best).
+        count: how many images to return (2-4 recommended).
+    """
+    count = max(1, min(int(count), 4))
+    try:
+        from ddgs import DDGS
+
+        def _search():
+            with DDGS() as d:
+                return list(d.images(query, max_results=12))
+
+        results = await asyncio.to_thread(_search)
+    except Exception as e:
+        return f"Image search unavailable ({type(e).__name__}: {e}). Proceed from your own knowledge of this style, and say you did so."
+
+    outputs: list = []
+    previews: list[str] = []
+    for item in results:
+        if len(previews) >= count:
+            break
+        url = item.get("image") or item.get("thumbnail")
+        if not url:
+            continue
+        data_url = await asyncio.to_thread(_download_image, url)
+        if not data_url:
+            continue
+        previews.append(data_url)
+        outputs.append(ToolOutputImage(image_url=data_url, detail="auto"))
+
+    if not outputs:
+        return f"Search ran but no images could be downloaded for '{query}'. Try a different query or proceed from knowledge."
+
+    # show the audience what the agent is looking at
+    await ctx.context.send({"type": "ref_images", "query": query, "images": previews})
+    outputs.insert(0, ToolOutputText(text=f"{len(previews)} live reference images for '{query}' — study their structure, palette, type:"))
+    return outputs
 
 
 _FONT_CATALOG = [
