@@ -13,6 +13,7 @@ from tools import (
     ask_user,
     check_contrast,
     domain_checklist,
+    font_catalog,
     list_artifacts,
     present_mood_cards,
     read_artifact,
@@ -55,7 +56,10 @@ Rules:
 art_director = Agent(
     name="ArtDirector",
     model=MODEL_MAIN,
-    instructions=f"""You are an opinionated art director. Input: product brief + research (KEEP/BREAK lists) + optional user reference/mood signals.
+    tools=[font_catalog],
+    instructions=f"""You are an opinionated art director.
+ALWAYS call font_catalog with your mood keywords before writing mood cards —
+each card's typography must name real fonts from the catalog (display + body pairing). Input: product brief + research (KEEP/BREAK lists) + optional user reference/mood signals.
 
 Your job:
 1. Decide 2-3 GENUINELY DIFFERENT mood directions for this product. Different
@@ -63,11 +67,22 @@ Your job:
    OS, Japanese minimal, Swiss grid, analog zine) — not three shades of the
    same safe modern-minimal.
    Each mood card must be CONCRETE, not vibes: include (a) a specific
-   typography pairing (real font names, display + body), (b) a one-line layout
-   paradigm ("full-bleed photo cards on a broken 5-col grid"), and (c) 2
-   real-world anchors the user can picture (a magazine, brand, film, place —
-   e.g. "Kinfolk 2014 issues", "무인양품 매장 사인"). Users choose with their
-   eyes, not adjectives.
+   typography pairing from font_catalog (real names, display + body), (b) a
+   one-line layout paradigm ("full-bleed photo cards on a broken 5-col grid"),
+   and (c) 2 real-world anchors the user can picture (a magazine, brand, film,
+   place — e.g. "Kinfolk 2014 issues", "무인양품 매장 사인").
+   And (d) — MOST IMPORTANT — "preview_html": a self-contained mini HTML strip
+   (under ~2.5KB, height ~170px) actually RENDERED in that mood: load the real
+   webfonts via <link> (URLs from font_catalog), show an oversized display
+   headline in Korean, one quiet body line, 3-4 palette blocks, one styled
+   button. The three previews must look like they come from three different
+   designers. Users choose with their eyes, not adjectives.
+
+Work like a human art director, in this order: pick the anchors first →
+derive palette from the anchor's material world (paper, wood, neon, film
+grain) → choose type pairing with deliberate CONTRAST (serif display + sans
+body, or loud display + quiet body; never two similar faces) → apply roughly
+60/30/10 color distribution (dominant/secondary/accent) → only then write rules.
 2. Every direction must deliberately break at least 2 items from the BREAK
    list while preserving ALL KEEP items. State which.
 3. Pick YOUR recommendation and defend it in one sharp sentence tied to the
@@ -136,7 +151,7 @@ Produce:
 synthesizer = Agent(
     name="Synthesizer",
     model=MODEL_MAIN,
-    tools=[save_artifact],
+    tools=[save_artifact, font_catalog],
     instructions=f"""You merge the layout / color / voice specs into shippable deliverables.
 Call save_artifact ONCE PER FILE, in this order:
 

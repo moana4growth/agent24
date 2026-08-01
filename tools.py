@@ -79,7 +79,10 @@ async def present_mood_cards(
               "typography":"display+body font pairing (real names)",
               "layout_hint":"one-line layout paradigm",
               "anchors":["real-world reference 1","reference 2"],
-              "vibe_sentence":"...","rationale":"why this fits"}]
+              "vibe_sentence":"...","rationale":"why this fits",
+              "preview_html":"self-contained mini HTML strip (~2KB) RENDERED in
+               this mood: real webfonts via <link>, display headline, one body
+               line, palette blocks, one button. This is what sells the mood."}]
         recommended_id: id of the card YOU recommend (with rationale inside that card).
     """
     try:
@@ -237,6 +240,48 @@ def domain_checklist(domain: str) -> str:
         if k in key or key in k:
             return json.dumps({"domain": k, "required": v, "note": "fuzzy match"}, ensure_ascii=False)
     return json.dumps({"domain": key, "required": [], "note": "unknown domain — derive required elements yourself from research"}, ensure_ascii=False)
+
+
+_FONT_CATALOG = [
+    {"name": "Pretendard", "mood": ["neutral", "modern", "product"], "css": "https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css", "family": "Pretendard"},
+    {"name": "SUIT", "mood": ["clean", "tech", "geometric"], "css": "https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/static/woff2/SUIT.css", "family": "SUIT"},
+    {"name": "Noto Serif KR", "mood": ["editorial", "literary", "premium"], "css": "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap", "family": "'Noto Serif KR', serif"},
+    {"name": "Nanum Myeongjo", "mood": ["classic", "print", "quiet"], "css": "https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap", "family": "'Nanum Myeongjo', serif"},
+    {"name": "Gowun Batang", "mood": ["warm", "essay", "kinfolk", "slow"], "css": "https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap", "family": "'Gowun Batang', serif"},
+    {"name": "Gowun Dodum", "mood": ["soft", "friendly", "calm"], "css": "https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap", "family": "'Gowun Dodum', sans-serif"},
+    {"name": "Hahmlet", "mood": ["editorial", "contemporary-serif", "fashion"], "css": "https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;500;700&display=swap", "family": "'Hahmlet', serif"},
+    {"name": "IBM Plex Sans KR", "mood": ["technical", "swiss", "grid"], "css": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;500;700&display=swap", "family": "'IBM Plex Sans KR', sans-serif"},
+    {"name": "Black Han Sans", "mood": ["loud", "retro", "poster", "brutalist"], "css": "https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap", "family": "'Black Han Sans', sans-serif"},
+    {"name": "Do Hyeon", "mood": ["retro", "signage", "bold"], "css": "https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap", "family": "'Do Hyeon', sans-serif"},
+    {"name": "Song Myung", "mood": ["vintage", "editorial", "title"], "css": "https://fonts.googleapis.com/css2?family=Song+Myung&display=swap", "family": "'Song Myung', serif"},
+    {"name": "Stylish", "mood": ["playful", "handwritten-ish", "light"], "css": "https://fonts.googleapis.com/css2?family=Stylish&display=swap", "family": "'Stylish', sans-serif"},
+    {"name": "East Sea Dokdo", "mood": ["raw", "zine", "handwriting"], "css": "https://fonts.googleapis.com/css2?family=East+Sea+Dokdo&display=swap", "family": "'East Sea Dokdo', cursive"},
+    {"name": "Nanum Brush Script", "mood": ["brush", "analog", "human"], "css": "https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap", "family": "'Nanum Brush Script', cursive"},
+    {"name": "Space Grotesk (Latin)", "mood": ["display-latin", "tech", "contemporary"], "css": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap", "family": "'Space Grotesk', sans-serif"},
+]
+
+
+@function_tool
+def font_catalog(mood_keywords: list[str]) -> str:
+    """Curated Korean-capable webfont catalog with CDN links, filtered by mood.
+
+    Use this to pick REAL, loadable fonts instead of defaulting to safe choices.
+    Pair a display face with a body face; unexpected pairings break AI-look.
+
+    Args:
+        mood_keywords: e.g. ["editorial","kinfolk"] or ["retro","brutalist"].
+                       Pass an empty list to get the full catalog.
+    """
+    kws = [k.lower() for k in mood_keywords]
+    if not kws:
+        return json.dumps(_FONT_CATALOG, ensure_ascii=False)
+    scored = []
+    for f in _FONT_CATALOG:
+        score = sum(1 for k in kws for m in f["mood"] if k in m or m in k)
+        scored.append((score, f))
+    scored.sort(key=lambda x: -x[0])
+    top = [f for s, f in scored if s > 0] or _FONT_CATALOG
+    return json.dumps(top[:8], ensure_ascii=False)
 
 
 def to_jsonable(obj: Any) -> Any:

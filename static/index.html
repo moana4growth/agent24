@@ -36,6 +36,7 @@
   .mood .pal i { flex:1; }
   .mood h3 { font-size:14px; } .mood p { font-size:12px; color:var(--dim); }
   .mood .badge { font-size:10px; color:#111; background:var(--ac); border-radius:3px; padding:1px 5px; margin-left:6px; }
+  .mood .mprev { width:100%; height:175px; border:0; border-radius:6px; margin:8px 0; background:#fff; pointer-events:none; }
   #tabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
   #tabs button { background:var(--panel); color:var(--tx); border:1px solid var(--line); font-weight:400; font-size:12px; }
   #tabs button.on { border-color:var(--ac); color:var(--ac); }
@@ -149,7 +150,8 @@ function renderMoods(m){
   m.cards.forEach(c=>{
     const d=document.createElement('div'); d.className='mood'+(c.id===m.recommended?' rec':'');
     d.innerHTML = `<h3>${esc(c.name)}${c.id===m.recommended?'<span class="badge">추천</span>':''}</h3>
-      <div class="pal">${(c.palette||[]).map(p=>`<i style="background:${esc(p)}"></i>`).join('')}</div>
+      ${c.preview_html?`<iframe class="mprev" sandbox="allow-same-origin" scrolling="no"></iframe>`:
+        `<div class="pal">${(c.palette||[]).map(p=>`<i style="background:${esc(p)}"></i>`).join('')}</div>`}
       <p>${esc((c.keywords||[]).join(' · '))}</p>
       ${c.typography?`<p>🄰 ${esc(c.typography)}</p>`:''}
       ${c.layout_hint?`<p>▦ ${esc(c.layout_hint)}</p>`:''}
@@ -161,6 +163,8 @@ function renderMoods(m){
       box.querySelectorAll('.mood').forEach(x=>x.style.opacity=.35); d.style.opacity=1;
       phase(`무드 선택: ${c.name} — 전문가 팀 병렬 가동`); };
     box.append(d);
+    const pf = d.querySelector('.mprev');
+    if (pf) pf.srcdoc = c.preview_html;
   });
 }
 function renderAsk(m){
