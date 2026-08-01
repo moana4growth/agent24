@@ -76,7 +76,10 @@ async def present_mood_cards(
     Args:
         cards_json: JSON array of cards:
             [{"id":"a","name":"...","keywords":["..."],"palette":["#hex",...],
-              "typography":"...","vibe_sentence":"...","rationale":"why this fits"}]
+              "typography":"display+body font pairing (real names)",
+              "layout_hint":"one-line layout paradigm",
+              "anchors":["real-world reference 1","reference 2"],
+              "vibe_sentence":"...","rationale":"why this fits"}]
         recommended_id: id of the card YOU recommend (with rationale inside that card).
     """
     try:
@@ -118,7 +121,7 @@ async def save_artifact(
     Args:
         filename: e.g. "variant_a.html", "design-tokens.json", "DESIGN.md", "screen_home.html".
         content: full file content.
-        kind: one of "variant" | "tokens" | "designmd" | "screen" | "other".
+        kind: one of "brandbook" | "variant" | "tokens" | "designmd" | "screen" | "other".
     """
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", filename)
     path = ctx.context.out_dir / safe

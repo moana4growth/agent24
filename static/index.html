@@ -142,16 +142,22 @@ ws.onmessage = e => {
   else if (m.type==='error'){ running=false; $('start').disabled=false; log('⚠ error', m.message); }
 };
 
+let moodChosen = false;
 function renderMoods(m){
+  moodChosen = false;
   $('moodwrap').classList.remove('hidden'); const box=$('moods'); box.innerHTML='';
   m.cards.forEach(c=>{
     const d=document.createElement('div'); d.className='mood'+(c.id===m.recommended?' rec':'');
     d.innerHTML = `<h3>${esc(c.name)}${c.id===m.recommended?'<span class="badge">추천</span>':''}</h3>
       <div class="pal">${(c.palette||[]).map(p=>`<i style="background:${esc(p)}"></i>`).join('')}</div>
       <p>${esc((c.keywords||[]).join(' · '))}</p>
+      ${c.typography?`<p>🄰 ${esc(c.typography)}</p>`:''}
+      ${c.layout_hint?`<p>▦ ${esc(c.layout_hint)}</p>`:''}
+      ${(c.anchors&&c.anchors.length)?`<p>⌘ ${esc(c.anchors.join(' / '))}</p>`:''}
       <p>${esc(c.vibe_sentence||'')}</p>
       <p style="margin-top:6px;color:var(--tx)">${esc(c.rationale||'')}</p>`;
-    d.onclick=()=>{ send({type:'user_response', payload:{selected:c.id, name:c.name}});
+    d.onclick=()=>{ if(moodChosen) return; moodChosen = true;
+      send({type:'user_response', payload:{selected:c.id, name:c.name}});
       box.querySelectorAll('.mood').forEach(x=>x.style.opacity=.35); d.style.opacity=1;
       phase(`무드 선택: ${c.name} — 전문가 팀 병렬 가동`); };
     box.append(d);
@@ -187,7 +193,9 @@ function showTab(fn){
   const a=artifacts[fn]; const body=$('tabbody'); body.innerHTML='';
   if(fn.endsWith('.html')){
     const wrap=document.createElement('div'); wrap.className='frames';
-    const ifr=document.createElement('iframe'); ifr.srcdoc=a.content; wrap.append(ifr); body.append(wrap);
+    const ifr=document.createElement('iframe'); ifr.srcdoc=a.content;
+    if(a.kind==='brandbook'){ ifr.style.width='100%'; ifr.style.height='82vh'; ifr.style.borderRadius='4px'; }
+    wrap.append(ifr); body.append(wrap);
   } else {
     const pre=document.createElement('pre'); pre.className='doc'; pre.textContent=a.content; body.append(pre);
   }

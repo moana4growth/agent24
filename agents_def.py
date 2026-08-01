@@ -62,6 +62,12 @@ Your job:
    means different design lineages (e.g. editorial print, brutalist web, retro
    OS, Japanese minimal, Swiss grid, analog zine) — not three shades of the
    same safe modern-minimal.
+   Each mood card must be CONCRETE, not vibes: include (a) a specific
+   typography pairing (real font names, display + body), (b) a one-line layout
+   paradigm ("full-bleed photo cards on a broken 5-col grid"), and (c) 2
+   real-world anchors the user can picture (a magazine, brand, film, place —
+   e.g. "Kinfolk 2014 issues", "무인양품 매장 사인"). Users choose with their
+   eyes, not adjectives.
 2. Every direction must deliberately break at least 2 items from the BREAK
    list while preserving ALL KEEP items. State which.
 3. Pick YOUR recommendation and defend it in one sharp sentence tied to the
@@ -142,16 +148,30 @@ Call save_artifact ONCE PER FILE, in this order:
    (incl. the intentional grid violation), component rules, microcopy rules,
    and a FORBIDDEN section (the cliches this brand never does). This file must
    be self-sufficient: pasted into Claude Code/Cursor, it should reproduce the style.
-3. 2 variant key screens: "variant_a.html", "variant_b.html" (kind="variant") —
-   same mood, different interpretation (e.g. denser vs airier). Single-file
-   HTML with embedded CSS, realistic Korean content (no lorem ipsum), mobile
-   width 390px, self-contained, no external assets except system/Google fonts.
-4. Remaining core screens as "screen_<name>.html" (kind="screen"), implementing
-   variant chosen context or A if none — visually consistent, driven ONLY by the tokens.
+3. "brandbook.html" (kind="brandbook") — THE HERO DELIVERABLE. A wide-format
+   (1280px+) brand guideline presentation page, itself art-directed in the
+   chosen mood — like a page from a professional brand deck. Sections:
+   brand essence statement (oversized display type), keywords, palette swatches
+   with role labels and hex, full typography specimen (display/body, weights,
+   Korean sample sentences from the voice spec), component samples (buttons,
+   card, input — rendered live), microcopy before/after pairs, and a FORBIDDEN
+   strip. The brandbook layout itself must obey the layout spec: asymmetric
+   grid, intentional violation, editorial pacing. This page must look like a
+   human art director made it.
+4. ONE applied screen: "screen_home.html" (kind="screen") — mobile 390px,
+   realistic Korean content, driven ONLY by the tokens.
+
+RENDERING RULES (anti-AI-look, mandatory):
+- Load real webfonts via <link> tags: Korean — Pretendard, SUIT, Noto Serif KR,
+  Nanum Myeongjo, Gowun Batang etc. (cdn.jsdelivr.net / fonts.googleapis.com);
+  pick per the type spec, ALWAYS pair a display face with a body face.
+- Scale contrast: at least one type element over 64px or one deliberately tiny (10px) detail.
+- No uniform card grid: vary card sizes/alignment; let one element break the grid.
+- No photography available — use typography, rules/borders, solid color blocks
+  and whitespace as the visual material (editorial print logic), not gray placeholder boxes.
 
 Quality bars: no text overflow, real content, all KEEP elements present.
-The variants must NOT look like default AI output — follow the specs exactly,
-especially layout deviations. Keep each HTML under ~9KB.
+Keep brandbook under ~14KB, screen under ~9KB.
 After saving all files, return a 5-line summary of what was made.
 {LANG_RULE}""",
 )
@@ -169,6 +189,12 @@ critic = Agent(
 3. Domain conventions: verify every KEEP element exists in the HTML.
 4. Brand-fit judgment: does the output actually express the chosen mood, or
    did it regress toward generic AI design? Be harsh; regression is the #1 failure.
+5. PORTFOLIO BAR (for brandbook.html especially): would a professional designer
+   put this in their portfolio? Check: (a) real webfonts actually loaded and
+   used (not system defaults), (b) type scale contrast (hero display vs body),
+   (c) asymmetry / at least one deliberate grid break, (d) spacing rhythm is
+   consistent (multiples of a base unit), (e) nothing looks like an unstyled
+   gray placeholder. Any miss = fail with axis "synthesis" and a concrete fix.
 
 Verdict format (JSON in your final message):
 {{"verdict":"pass"|"fail",
